@@ -1,4 +1,5 @@
-const $btn = document.getElementById('btn-kick');
+const $btnKick = document.getElementById('btn-kick');
+const $btnThunder = document.getElementById('btn-thunder');
 
 const character = {
     name: 'Pikachu',
@@ -16,10 +17,14 @@ const enemy = {
     elProgressBar: document.getElementById('progressbar-enemy'),
 };
 
-$btn.addEventListener('click', function () {
-    console.log('Kick');
-    changeHP(random(20), character);
-    changeHP(random(20), enemy);
+$btnKick.addEventListener('click', function () {
+    console.log('Jolt');
+    getKick();
+});
+
+$btnThunder.addEventListener('click', function () {
+    console.log('Thunder');
+    getKick();
 });
 
 const random = (num) => Math.ceil(Math.random() * num);
@@ -27,7 +32,6 @@ const random = (num) => Math.ceil(Math.random() * num);
 function init() {
     renderHP(character);
     renderHP(enemy);
-    
 };
 
 function renderHP(person) {
@@ -36,7 +40,7 @@ function renderHP(person) {
 };
 
 function renderHPLife(person) {
-    person.elHP.innerText = character.damageHP + ' / ' + character.defaultHP;
+    person.elHP.innerText = person.damageHP + ' / ' + person.defaultHP;
 };
 
 function renderProgressBarHP(person) {
@@ -47,11 +51,17 @@ function changeHP(count, person) {
     if (person.damageHP < count) {
         person.damageHP = 0;
         alert('Бедный ' + person.name + ' проиграл бой!');
-        $btn.disabled = true;
+        $btnThunder.disabled = true;
+        $btnKick.disabled = true;
     } else {
         person.damageHP -= count;
     }
     renderHP(person);
-}
+};
+
+function getKick() {
+    changeHP(random(20), character);
+    changeHP(random(20), enemy);
+};
 
 init();
