@@ -28,8 +28,8 @@ const character = {
 const enemy = {
     name: 'Charmander',
     hp: {
-        default: 100,
-        current: 100,
+        default: 300,
+        current: 300,
     },
     currentDamage: 0,
 
@@ -70,7 +70,8 @@ function renderHPLife() {
 };
 
 function renderProgressBarHP() {
-    this.elProgressBar.style.width = this.hp.current + '%';
+    const progressInPercents = (this.hp.current * 100) / this.hp.default;
+    this.elProgressBar.style.width = progressInPercents + '%';
 };
 
 function changeHP(count) {
