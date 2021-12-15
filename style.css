@@ -472,3 +472,27 @@ h1 {
 .action label {
     padding: 6px 0;
 }
+
+#logs {
+    height: 0;
+    max-height: 250px;
+    overflow: auto;
+    z-index: 999;
+    position: inherit;
+    width: 1024px;
+    margin: 0 auto;
+    background: #0a4444;
+    padding: 0 20px;
+    color: antiquewhite;
+}
+
+
+#logs p {
+    font-size: 14px;
+}
+
+.damage-log {
+    font-weight: bold;
+    color: #f00303;
+    font-size: 15px;
+}

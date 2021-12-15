@@ -5,6 +5,9 @@ function $getElById(id) {
 const $btnKick = $getElById('btn-kick');
 const $btnThunder = $getElById('btn-thunder');
 
+const $logs = $getElById('logs');
+
+
 const character = {
     name: 'Pikachu',
     hp: {
@@ -54,6 +57,7 @@ const random = (num) => Math.ceil(Math.random() * num);
 function init() {
     character.renderHP();
     enemy.renderHP();
+    generateLog('start');
 };
 
 function renderHP() {
@@ -70,16 +74,21 @@ function renderProgressBarHP() {
 };
 
 function changeHP(count) {
-    this.hp.current -= count;
-    this.currentDamage = count;
-    console.log(this.generateLog());
-    if (this.hp.current <= 0) {
-        this.hp.current = 0;
-        alert('Бедный ' + this.name + ' проиграл бой!');
-        $btnThunder.disabled = true;
-        $btnKick.disabled = true;
-    }
-    this.renderHP();
+    const secondPerson = this === character ? enemy : character;
+    if (secondPerson.hp.current === 0) {
+        this.renderHP();
+    } else {
+        this.hp.current -= count;
+        this.currentDamage = count;
+        this.generateLog();
+        if (this.hp.current <= 0) {
+            this.hp.current = 0;
+            this.generateLog('finish');
+            $btnThunder.disabled = true;
+            $btnKick.disabled = true;
+        } 
+        this.renderHP();
+    } 
 };
 
 function getKick() {
@@ -87,24 +96,42 @@ function getKick() {
     enemy.changeHP(random(20));
 };
 
-function generateLog() {
-    const secondPerson = this === character ? enemy : character;
-    const logs = [
-        `${this.name} вспомнил что-то важное, но неожиданно ${secondPerson.name}, не помня себя от испуга, ударил в предплечье врага.`,
-        `${this.name} поперхнулся, и за это ${secondPerson.name} с испугу приложил прямой удар коленом в лоб врага.`,
-        `${this.name} забылся, но в это время наглый ${secondPerson.name}, приняв волевое решение, неслышно подойдя сзади, ударил.`,
-        `${this.name} пришел в себя, но неожиданно ${secondPerson.name} случайно нанес мощнейший удар.`,
-        `${this.name} поперхнулся, но в это время ${secondPerson.name} нехотя раздробил кулаком \<вырезанно цензурой\> противника.`,
-        `${this.name} удивился, а ${secondPerson.name} пошатнувшись влепил подлый удар.`,
-        `${this.name} высморкался, но неожиданно ${secondPerson.name} провел дробящий удар.`,
-        `${this.name} пошатнулся, и внезапно наглый ${secondPerson.name} беспричинно ударил в ногу противника.`,
-        `${this.name} расстроился, как вдруг, неожиданно ${secondPerson.name} случайно влепил стопой в живот соперника.`,
-        `${this.name} пытался что-то сказать, но вдруг, неожиданно ${secondPerson.name} со скуки, разбил бровь сопернику.`,
-    ];
-
-    const damage = ` -${this.currentDamage}, ${this.hp.current} / ${this.hp.default}`;
-
-    return logs[random(logs.length - 1)] + damage;
+function generateLog(str) {
+    const $p = document.createElement('p');
+    const $span = document.createElement('span');
+    
+    $span.classList.add('damage-log');
+    
+    
+    if (str && str === 'start') {
+        $span.innerText = 'ДА НАЧНЕТСЯ БОЙ!';
+        $p.appendChild($span);
+    } else if (str && str === 'finish') {
+        $span.innerText = `Бедный ${this.name} проиграл бой!`;
+        $p.appendChild($span);
+    } else {
+        const secondPerson = this === character ? enemy : character;
+        const logs = [
+            `${this.name} вспомнил что-то важное, но неожиданно ${secondPerson.name}, не помня себя от испуга, ударил в предплечье врага.`,
+            `${this.name} поперхнулся, и за это ${secondPerson.name} с испугу приложил прямой удар коленом в лоб врага.`,
+            `${this.name} забылся, но в это время наглый ${secondPerson.name}, приняв волевое решение, неслышно подойдя сзади, ударил.`,
+            `${this.name} пришел в себя, но неожиданно ${secondPerson.name} случайно нанес мощнейший удар.`,
+            `${this.name} поперхнулся, но в это время ${secondPerson.name} нехотя раздробил кулаком \<вырезанно цензурой\> противника.`,
+            `${this.name} удивился, а ${secondPerson.name} пошатнувшись влепил подлый удар.`,
+            `${this.name} высморкался, но неожиданно ${secondPerson.name} провел дробящий удар.`,
+            `${this.name} пошатнулся, и внезапно наглый ${secondPerson.name} беспричинно ударил в ногу противника.`,
+            `${this.name} расстроился, как вдруг, неожиданно ${secondPerson.name} случайно влепил стопой в живот соперника.`,
+            `${this.name} пытался что-то сказать, но вдруг, неожиданно ${secondPerson.name} со скуки, разбил бровь сопернику.`,
+        ];
+        const damage = ` -${this.currentDamage}, ${this.hp.current} / ${this.hp.default}`;
+        
+        $p.innerText = logs[random(logs.length - 1)];
+        $span.innerText = damage;
+        $p.appendChild($span);
+    }
+    
+    $logs.insertBefore($p, $logs.children[0]);
+    $logs.style.height = '250px';
 };
 
 init();
