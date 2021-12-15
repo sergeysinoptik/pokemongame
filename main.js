@@ -1,3 +1,20 @@
+import Pokemon from './pokemon.js';
+import random from './utils.js';
+
+const player1 = new Pokemon({
+    name: 'Pikachu',
+    type: 'electric',
+    hp: 500,
+    selectors: 'character',
+});
+
+const player2 = new Pokemon({
+    name: 'Charmander',
+    type: 'fire',
+    hp: 50,
+    selectors: 'enemy',
+});
+
 function $getElById(id) {
     return document.getElementById(id);
 }
@@ -8,7 +25,7 @@ const $btnThunder = $getElById('btn-thunder');
 const $logs = $getElById('logs');
 
 
-const character = {
+/* const character = {
     name: 'Pikachu',
     hp: {
         default: 100,
@@ -23,9 +40,9 @@ const character = {
     renderHPLife: renderHPLife,
     renderProgressBarHP: renderProgressBarHP,
     generateLog: generateLog,
-};
+}; */
 
-const enemy = {
+/* const enemy = {
     name: 'Charmander',
     hp: {
         default: 300,
@@ -39,124 +56,104 @@ const enemy = {
     renderHP: renderHP,
     renderHPLife: renderHPLife,
     renderProgressBarHP: renderProgressBarHP,
-    generateLog: generateLog,
+    //generateLog: generateLog,
+}; */
+
+const disableAllButtons = () => {
+    const allButtons = Array.from(document.getElementsByClassName('button'));
+    if (player1.hp.current <= 0 || player2.hp.current  <= 0) {
+        allButtons.forEach(e => e.disabled = true);
+    }
 };
 
-function countOfClicks(btn, num = 6) {
-    function slice() {
-        if (num < 9) {
-            return `${btn.innerText.slice(0, -3)} [${num}]`;
-        } else {
-            return `${btn.innerText.slice(0, -4)} [${num}]`
-        }
-    }
-    btn.innerText = slice();
+function countBtn(count = 6, elem) {
+    const innerText = elem.innerText;
+    elem.innerText = `${innerText} (${count})`;
     return function () {
-        console.log(num);
-        num -= 1;
-        btn.innerText = slice();
-        if (num === 0) {
-            btn.disabled = true;
+        count -= 1;
+        if (count === 0) {
+            elem.disabled = true;
         }
-    } 
-}
+        elem.innerText = `${innerText} (${count})`;
+        return count;
+    }
+};
 
-const disableBtnKick = countOfClicks($btnKick);
-const disableBtnThunder = countOfClicks($btnThunder, 10)
+const countBtnJolt = countBtn(6, $btnKick);
+const countBtnThunder = countBtn(10, $btnThunder);
 
 $btnKick.addEventListener('click', function () {
-    console.log('Jolt');
+    countBtnJolt();
     getKick();
-    disableBtnKick();
+    disableAllButtons();
+
 });
 
 $btnThunder.addEventListener('click', function () {
-    console.log('Thunder');
+    countBtnThunder();
     getKick();
-    disableBtnThunder()
+    disableAllButtons();
+
 });
 
-const random = (num) => Math.ceil(Math.random() * num);
-
-function init() {
-    character.renderHP();
-    enemy.renderHP();
-    generateLog('start');
-};
-
-function renderHP() {
-    this.renderHPLife();
-    this.renderProgressBarHP();
-};
-
-function renderHPLife() {
-    this.elHP.innerText = this.hp.current + ' / ' + this.hp.default;
-};
-
-function renderProgressBarHP() {
-    const progressInPercents = (this.hp.current * 100) / this.hp.default;
-    this.elProgressBar.style.width = progressInPercents + '%';
-};
-
-function changeHP(count) {
-    const secondPerson = this === character ? enemy : character;
-    if (secondPerson.hp.current === 0) {
-        this.renderHP();
-    } else {
-        this.hp.current -= count;
-        this.currentDamage = count;
-        this.generateLog();
-        if (this.hp.current <= 0) {
-            this.hp.current = 0;
-            this.generateLog('finish');
-            $btnThunder.disabled = true;
-            $btnKick.disabled = true;
-        } 
-        this.renderHP();
-    } 
-};
-
 function getKick() {
-    character.changeHP(random(20));
-    enemy.changeHP(random(20));
+    player1.changeHP(random(20), function(count) {
+        generateLog(player1, player2, count);
+        if (player1.hp.current <= 0) {
+            generateMessage('finish', player1.name)
+        };
+    });
+    player2.changeHP(random(20), function(count) {
+        generateLog(player2, player1, count);
+        if (player2.hp.current <= 0) {
+            generateMessage('finish', player2.name)
+        };
+    });
 };
 
-function generateLog(str) {
+function generateLog(person1, person2, count) {
     const $p = document.createElement('p');
     const $span = document.createElement('span');
     
     $span.classList.add('damage-log');
-    
-    
-    if (str && str === 'start') {
-        $span.innerText = 'ДА НАЧНЕТСЯ БОЙ!';
-        $p.appendChild($span);
-    } else if (str && str === 'finish') {
-        $span.innerText = `Бедный ${this.name} проиграл бой!`;
-        $p.appendChild($span);
-    } else {
-        const secondPerson = this === character ? enemy : character;
-        const logs = [
-            `${this.name} вспомнил что-то важное, но неожиданно ${secondPerson.name}, не помня себя от испуга, ударил в предплечье врага.`,
-            `${this.name} поперхнулся, и за это ${secondPerson.name} с испугу приложил прямой удар коленом в лоб врага.`,
-            `${this.name} забылся, но в это время наглый ${secondPerson.name}, приняв волевое решение, неслышно подойдя сзади, ударил.`,
-            `${this.name} пришел в себя, но неожиданно ${secondPerson.name} случайно нанес мощнейший удар.`,
-            `${this.name} поперхнулся, но в это время ${secondPerson.name} нехотя раздробил кулаком \<вырезанно цензурой\> противника.`,
-            `${this.name} удивился, а ${secondPerson.name} пошатнувшись влепил подлый удар.`,
-            `${this.name} высморкался, но неожиданно ${secondPerson.name} провел дробящий удар.`,
-            `${this.name} пошатнулся, и внезапно наглый ${secondPerson.name} беспричинно ударил в ногу противника.`,
-            `${this.name} расстроился, как вдруг, неожиданно ${secondPerson.name} случайно влепил стопой в живот соперника.`,
-            `${this.name} пытался что-то сказать, но вдруг, неожиданно ${secondPerson.name} со скуки, разбил бровь сопернику.`,
-        ];
-        const damage = ` -${this.currentDamage}, ${this.hp.current} / ${this.hp.default}`;
-        
-        $p.innerText = logs[random(logs.length - 1)];
-        $span.innerText = damage;
-        $p.appendChild($span);
-    }
-    
+
+    const logs = [
+        `${person1.name} вспомнил что-то важное, но неожиданно ${person2.name}, не помня себя от испуга, ударил в предплечье врага.`,
+        `${person1.name} поперхнулся, и за это ${person2.name} с испугу приложил прямой удар коленом в лоб врага.`,
+        `${person1.name} забылся, но в это время наглый ${person2.name}, приняв волевое решение, неслышно подойдя сзади, ударил.`,
+        `${person1.name} пришел в себя, но неожиданно ${person2.name} случайно нанес мощнейший удар.`,
+        `${person1.name} поперхнулся, но в это время ${person2.name} нехотя раздробил кулаком \<вырезанно цензурой\> противника.`,
+        `${person1.name} удивился, а ${person2.name} пошатнувшись влепил подлый удар.`,
+        `${person1.name} высморкался, но неожиданно ${person2.name} провел дробящий удар.`,
+        `${person1.name} пошатнулся, и внезапно наглый ${person2.name} беспричинно ударил в ногу противника.`,
+        `${person1.name} расстроился, как вдруг, неожиданно ${person2.name} случайно влепил стопой в живот соперника.`,
+        `${person1.name} пытался что-то сказать, но вдруг, неожиданно ${person2.name} со скуки, разбил бровь сопернику.`,
+    ];
+
+    const damage = ` -${count}, ${person1.hp.current} / ${person1.hp.total}`;
+    $p.innerText = logs[random(logs.length - 1)];
+    $span.innerText = damage;
+    $p.appendChild($span);
+
     $logs.insertBefore($p, $logs.children[0]);
     $logs.style.height = '250px';
 };
 
-init();
+function generateMessage(msg, name) {
+    const $p = document.createElement('p');
+    const $span = document.createElement('span');
+    
+    $span.classList.add('damage-log');
+
+    if (msg === 'start') {
+        $span.innerText = 'ДА НАЧНЕТСЯ БОЙ!';
+        $p.appendChild($span);
+    }
+    if (msg === 'finish') {
+        $span.innerText = `Бедный ${name} проиграл бой!`;
+        $p.appendChild($span);
+    }
+    $logs.insertBefore($p, $logs.children[0]);
+}
+
+generateMessage('start');
