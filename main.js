@@ -42,14 +42,38 @@ const enemy = {
     generateLog: generateLog,
 };
 
+function countOfClicks(btn, num = 6) {
+    function slice() {
+        if (num < 9) {
+            return `${btn.innerText.slice(0, -3)} [${num}]`;
+        } else {
+            return `${btn.innerText.slice(0, -4)} [${num}]`
+        }
+    }
+    btn.innerText = slice();
+    return function () {
+        console.log(num);
+        num -= 1;
+        btn.innerText = slice();
+        if (num === 0) {
+            btn.disabled = true;
+        }
+    } 
+}
+
+const disableBtnKick = countOfClicks($btnKick);
+const disableBtnThunder = countOfClicks($btnThunder, 10)
+
 $btnKick.addEventListener('click', function () {
     console.log('Jolt');
     getKick();
+    disableBtnKick();
 });
 
 $btnThunder.addEventListener('click', function () {
     console.log('Thunder');
     getKick();
+    disableBtnThunder()
 });
 
 const random = (num) => Math.ceil(Math.random() * num);
