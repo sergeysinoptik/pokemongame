@@ -1,31 +1,79 @@
 import Pokemon from './pokemon.js';
 import random from './utils.js';
+import { pokemons } from './pokemons.js';
 
-const player1 = new Pokemon({
-    name: 'Pikachu',
-    type: 'electric',
-    hp: 500,
-    selectors: 'character',
+let character = pokemons[random(0, pokemons.length - 1)];
+let enemy = pokemons[random(0, pokemons.length - 1)];
+
+const $namePlayer1 = document.getElementById('name-player1');
+const $namePlayer2 = document.getElementById('name-player2');
+
+$namePlayer1.innerText = character.name;
+$namePlayer2.innerText = enemy.name;
+
+const $imgPlayer1 = document.querySelector('div.pokemon.player1 img');
+const $imgPlayer2 = document.querySelector('div.pokemon.player2 img');
+$imgPlayer1.src = character.img;
+$imgPlayer2.src = enemy.img;
+
+const $control = document.querySelector('.control');
+
+let player1 = new Pokemon({
+    ...character,
+    selectors: 'player1',
 });
 
-const player2 = new Pokemon({
-    name: 'Charmander',
-    type: 'fire',
-    hp: 50,
-    selectors: 'enemy',
+/* function getKick(player1, player2) {
+    player1.changeHP(random(20), function(count) {
+        generateLog(player1, player2, count);
+        if (player1.hp.current <= 0) {
+            generateMessage('finish', player1.name)
+        };
+    });
+    player2.changeHP(random(20), function(count) {
+        generateLog(player2, player1, count);
+        if (player2.hp.current <= 0) {
+            generateMessage('finish', player2.name)
+        };
+    });
+}; */
+
+player1.attacks.forEach(item => {
+    const $btn = document.createElement('button');
+    $btn.classList.add('button');
+    $btn.innerText = item.name;
+    const btnCount = countBtn(item.maxCount, $btn);
+
+    $btn.addEventListener('click', () => {
+        btnCount();
+        let attack = enemy.attacks[0];
+        player1.changeHP(random(attack.minDamage, attack.maxDamage), function(count) {
+            generateLog(player1, player2, count);
+            
+            if (player1.hp.current <= 0) {
+                generateMessage('finish', player1.name)
+            };
+            restartButton();
+        });
+        player2.changeHP(random(item.minDamage, item.maxDamage), function(count) {
+            generateLog(player2, player1, count);
+            if (player2.hp.current <= 0) {
+                generateMessage('finish', player2.name)
+            };
+            nextLevelButton();
+        });
+    })
+    $control.appendChild($btn);
+})
+
+let player2 = new Pokemon({
+    ...enemy,
+    selectors: 'player2',
 });
 
-function $getElById(id) {
-    return document.getElementById(id);
-}
+const $logs = document.getElementById('logs');
 
-const $btnKick = $getElById('btn-kick');
-const $btnThunder = $getElById('btn-thunder');
-
-const $logs = $getElById('logs');
-
-
-/* const character = {
+/* const player1 = {
     name: 'Pikachu',
     hp: {
         default: 100,
@@ -33,8 +81,8 @@ const $logs = $getElById('logs');
     },
     currentDamage: 0,
 
-    elHP: $getElById('health-character'),
-    elProgressBar: $getElById('progressbar-character'),
+    elHP: $getElById('health-player1'),
+    elProgressBar: $getElById('progressbar-player1'),
     changeHP: changeHP,
     renderHP: renderHP,
     renderHPLife: renderHPLife,
@@ -42,7 +90,7 @@ const $logs = $getElById('logs');
     generateLog: generateLog,
 }; */
 
-/* const enemy = {
+/* const player2 = {
     name: 'Charmander',
     hp: {
         default: 300,
@@ -50,8 +98,8 @@ const $logs = $getElById('logs');
     },
     currentDamage: 0,
 
-    elHP: $getElById('health-enemy'),
-    elProgressBar: $getElById('progressbar-enemy'),
+    elHP: $getElById('health-player2'),
+    elProgressBar: $getElById('progressbar-player2'),
     changeHP: changeHP,
     renderHP: renderHP,
     renderHPLife: renderHPLife,
@@ -59,10 +107,69 @@ const $logs = $getElById('logs');
     //generateLog: generateLog,
 }; */
 
-const disableAllButtons = () => {
+const restartButton = () => {
     const allButtons = Array.from(document.getElementsByClassName('button'));
-    if (player1.hp.current <= 0 || player2.hp.current  <= 0) {
-        allButtons.forEach(e => e.disabled = true);
+    if (player1.hp.current <= 0) {
+        allButtons.forEach(e => e.remove());
+        const $btn = document.createElement('button');
+        $btn.classList.add('button');
+        $btn.innerText = 'Restart Game';
+
+        $btn.addEventListener('click', function() {
+            window.location.reload();
+        })
+
+        $control.appendChild($btn);
+    }
+};
+
+const nextLevelButton = () => {
+    const allButtons = Array.from(document.getElementsByClassName('button'));
+    if (player2.hp.current <= 0) {
+        allButtons.forEach(e => e.style.display = 'none');
+        const $btn = document.createElement('button');
+        $btn.classList.add('button');
+        $btn.innerText = 'Next Lvl';
+
+        $btn.addEventListener('click', function() {
+            enemy = pokemons[random(0, pokemons.length - 1)];
+            console.log(enemy.name)
+            $namePlayer2.innerText = enemy.name;
+            $imgPlayer2.src = enemy.img;
+            allButtons.forEach(e => e.style.display = 'block');
+            $btn.remove();
+            player2 = new Pokemon({
+                ...enemy,
+                selectors: 'player2',
+            });
+            
+
+
+            player1.attacks.forEach(item => {
+            
+                $btn.addEventListener('click', () => {
+                    let attack = enemy.attacks[0];
+                    player1.changeHP(random(attack.minDamage, attack.maxDamage), function(count) {
+                        generateLog(player1, player2, count);
+                        
+                        if (player1.hp.current <= 0) {
+                            generateMessage('finish', player1.name)
+                        };
+                        restartButton();
+                    });
+                    player2.changeHP(random(item.minDamage, item.maxDamage), function(count) {
+                        generateLog(player2, player1, count);
+                        if (player2.hp.current <= 0) {
+                            generateMessage('finish', player2.name)
+                        };
+                        nextLevelButton();
+                    });
+                })
+            })
+
+            
+        });
+        $control.appendChild($btn);
     }
 };
 
@@ -77,38 +184,6 @@ function countBtn(count = 6, elem) {
         elem.innerText = `${innerText} (${count})`;
         return count;
     }
-};
-
-const countBtnJolt = countBtn(6, $btnKick);
-const countBtnThunder = countBtn(10, $btnThunder);
-
-$btnKick.addEventListener('click', function () {
-    countBtnJolt();
-    getKick();
-    disableAllButtons();
-
-});
-
-$btnThunder.addEventListener('click', function () {
-    countBtnThunder();
-    getKick();
-    disableAllButtons();
-
-});
-
-function getKick() {
-    player1.changeHP(random(20), function(count) {
-        generateLog(player1, player2, count);
-        if (player1.hp.current <= 0) {
-            generateMessage('finish', player1.name)
-        };
-    });
-    player2.changeHP(random(20), function(count) {
-        generateLog(player2, player1, count);
-        if (player2.hp.current <= 0) {
-            generateMessage('finish', player2.name)
-        };
-    });
 };
 
 function generateLog(person1, person2, count) {
@@ -131,7 +206,7 @@ function generateLog(person1, person2, count) {
     ];
 
     const damage = ` -${count}, ${person1.hp.current} / ${person1.hp.total}`;
-    $p.innerText = logs[random(logs.length - 1)];
+    $p.innerText = logs[random(0, logs.length - 1)];
     $span.innerText = damage;
     $p.appendChild($span);
 
@@ -154,6 +229,6 @@ function generateMessage(msg, name) {
         $p.appendChild($span);
     }
     $logs.insertBefore($p, $logs.children[0]);
-}
+};
 
 generateMessage('start');
